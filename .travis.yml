@@ -1,16 +1,25 @@
+# .travis.yml
+dist: precise
+
 language: php
 
 php:
-  - 5.6
-  - 7.0
-  - hhvm
+  - 7.2
 
-sudo: false
+addons:
+  mariadb: 10.4
 
-env:
-  - APP_DEBUG=false
+cache:
+  directories:
+    - node_modules
+    - vendor
 
-install:
-  - composer install --prefer-dist --optmize-autoloader --quiet
+before_script:
+  - cp .env.travis .env
+  - sudo mysql -e 'CREATE DATABASE testing;'
+  - composer self-update
+  - composer install --no-interaction
+  - php artisan migrate --no-interaction -vvv
 
-script: phpunit -c phpunit.xml --coverage-text
+script:
+  - vendor/bin/phpunit
